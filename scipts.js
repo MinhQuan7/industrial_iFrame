@@ -5,6 +5,7 @@ let currentMainPath;
 let startPoint;
 let isCtrlPressed = false;
 let endCircle = null;
+let lines = []; // Mảng để lưu trữ tất cả các line đã vẽ
 
 document.addEventListener("keydown", (e) => {
   if (e.ctrlKey) isCtrlPressed = true;
@@ -47,54 +48,43 @@ function createNeonEffect(path, color, width, blur) {
 
 function startDrawing() {
   drawInstance = SVG("#drawing-area").size("100%", "100%");
+  let lineGroup;
 
   drawInstance.on("mousedown", (e) => {
     if (!drawing) return;
     startPoint = { x: e.offsetX, y: e.offsetY };
 
-    // Create outer glow
-    currentGlowPath = drawInstance
-      .path(`M${startPoint.x},${startPoint.y}`)
-      .attr({
-        fill: "none",
-        stroke: "rgba(255, 255, 255, 0.4)",
-        "stroke-width": 8,
-        "stroke-linecap": "round",
-        filter: "url(#glow)",
-      });
+    // Tạo group chứa các thành phần của line
+    lineGroup = drawInstance.group().attr({ "data-line-group": true });
 
-    // Create middle layer
-    let middleGlow = drawInstance
-      .path(`M${startPoint.x},${startPoint.y}`)
-      .attr({
-        fill: "none",
-        stroke: "rgba(255, 255, 255, 0.6)",
-        "stroke-width": 4,
-        "stroke-linecap": "round",
-        filter: "url(#glow)",
-      });
+    // Tạo glow effect
+    currentGlowPath = lineGroup.path(`M${startPoint.x},${startPoint.y}`).attr({
+      fill: "none",
+      stroke: "rgba(255, 255, 255, 0.4)",
+      "stroke-width": 8,
+      "stroke-linecap": "round",
+      filter: "url(#glow)",
+    });
 
-    // Create core line
-    currentMainPath = drawInstance
+    // Lớp giữa
+    lineGroup.path(`M${startPoint.x},${startPoint.y}`).attr({
+      fill: "none",
+      stroke: "rgba(255, 255, 255, 0.6)",
+      "stroke-width": 4,
+      "stroke-linecap": "round",
+      filter: "url(#glow)",
+    });
+
+    // Line chính
+    currentMainPath = lineGroup
       .path(`M${startPoint.x},${startPoint.y}`)
+      .addClass("main-line")
       .attr({
         fill: "none",
         stroke: "#FFFFFF",
         "stroke-width": 2,
         "stroke-linecap": "round",
-      });
-
-    // Create filter for glow effect
-    let filter = drawInstance
-      .defs()
-      .element("filter")
-      .attr({
-        id: "glow",
-      })
-      .element("feGaussianBlur")
-      .attr({
-        stdDeviation: "3",
-        result: "coloredBlur",
+        "data-original-width": 2,
       });
   });
 
@@ -147,13 +137,20 @@ function startDrawing() {
 
   drawInstance.on("mouseup", () => {
     if (!drawing) return;
-    // Keep the end circle visible after mouseup
+
+    // Lưu line vào mảng quản lý
+    if (lineGroup) {
+      lines.push(lineGroup);
+      lineGroup.node.addEventListener("click", handleLineClick);
+    }
+
+    // Reset các biến
     endCircle = null;
     currentGlowPath = null;
     currentMainPath = null;
+    lineGroup = null;
   });
 }
-
 function snapToAngle(start, angle, length) {
   const snapAngles = [0, 45, 90, 135, 180, 225, 270, 315];
   let closestAngle = snapAngles[0];
@@ -178,3 +175,74 @@ function stopDrawing() {
   drawInstance.off("mousemove");
   drawInstance.off("mouseup");
 }
+
+//============Menu Drop Down Feature==============
+let isSelectMode = false;
+let selectedLine = null; // Line đang được chọn
+
+// Xử lý menu hamburger
+const hamburgerMenu = document.getElementById("hamburger-menu");
+const dropdownMenu = document.getElementById("dropdown-menu");
+const selectLineButton = document.getElementById("select-line-button");
+
+hamburgerMenu.addEventListener("click", () => {
+  dropdownMenu.classList.toggle("active");
+});
+
+// Đóng menu khi click ra ngoài
+document.addEventListener("click", (e) => {
+  if (!hamburgerMenu.contains(e.target) && !dropdownMenu.contains(e.target)) {
+    dropdownMenu.classList.remove("active");
+  }
+});
+
+// ============ Chức năng chọn và xóa line ============
+function handleLineClick(e) {
+  if (!isSelectMode || !e.target.closest("[data-line-group]")) return;
+
+  const lineElement = e.target.closest("[data-line-group]");
+  const lineGroup = SVG.get(lineElement);
+
+  // Bỏ chọn line cũ
+  if (selectedLine) {
+    const prevMain = selectedLine.findOne(".main-line");
+    prevMain.attr("stroke-width", prevMain.attr("data-original-width"));
+  }
+
+  // Chọn line mới
+  selectedLine = lineGroup;
+  const mainPath = selectedLine.findOne(".main-line");
+  mainPath.attr("data-original-width", mainPath.attr("stroke-width"));
+  mainPath.attr("stroke-width", 4); // Hiệu ứng phóng to
+}
+
+// ============ Chức năng xóa toàn bộ line ============
+document.getElementById("clear-all-button").addEventListener("click", () => {
+  lines.forEach((line) => line.remove());
+  lines = [];
+  selectedLine = null;
+});
+
+// Thêm sự kiện bàn phím để xóa line
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Delete" && selectedLine) {
+    // Xóa khỏi mảng quản lý
+    const index = lines.indexOf(selectedLine);
+    if (index > -1) lines.splice(index, 1);
+
+    selectedLine.remove();
+    selectedLine = null;
+  }
+});
+
+selectLineButton.addEventListener("click", () => {
+  isSelectMode = !isSelectMode;
+  selectLineButton.classList.toggle("active");
+  selectLineButton.textContent = isSelectMode
+    ? "Đang chọn line"
+    : "Chọn line để xóa";
+
+  // Thêm/xóa hiệu ứng cursor
+  const cursorStyle = isSelectMode ? "pointer" : "default";
+  lines.forEach((line) => (line.node.style.cursor = cursorStyle));
+});
