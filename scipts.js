@@ -144,8 +144,13 @@ function startDrawing() {
       lineGroup.node.addEventListener("click", handleLineClick);
     }
 
+    // Xóa endCircle sau khi vẽ xong line
+    if (endCircle) {
+      endCircle.remove();
+      endCircle = null;
+    }
+
     // Reset các biến
-    endCircle = null;
     currentGlowPath = null;
     currentMainPath = null;
     lineGroup = null;
@@ -174,6 +179,12 @@ function stopDrawing() {
   drawInstance.off("mousedown");
   drawInstance.off("mousemove");
   drawInstance.off("mouseup");
+
+  // Xóa endCircle khi dừng chế độ vẽ
+  if (endCircle) {
+    endCircle.remove();
+    endCircle = null;
+  }
 }
 
 //============Menu Drop Down Feature==============
@@ -198,22 +209,36 @@ document.addEventListener("click", (e) => {
 
 // ============ Chức năng chọn và xóa line ============
 function handleLineClick(e) {
-  if (!isSelectMode || !e.target.closest("[data-line-group]")) return;
+  if (!isSelectMode) return; // Assuming isSelectMode is a condition in your code
 
-  const lineElement = e.target.closest("[data-line-group]");
-  const lineGroup = SVG.get(lineElement);
+  // Step 1: Get the nearest <g> element with data-line-group
+  const lineElement = e.target.closest("g[data-line-group]");
 
-  // Bỏ chọn line cũ
-  if (selectedLine) {
-    const prevMain = selectedLine.findOne(".main-line");
-    prevMain.attr("stroke-width", prevMain.attr("data-original-width"));
+  // Step 2: Check if lineElement is valid
+  if (!lineElement) {
+    console.error("lineElement is not a valid SVG element");
+    return;
   }
 
-  // Chọn line mới
+  // Step 3: Adopt the DOM element into an SVG.js object
+  const lineGroup = SVG.adopt(lineElement);
+
+  // Step 4: Deselect the previously selected line (if any)
+  if (selectedLine) {
+    const prevMain = selectedLine.findOne(".main-line");
+    prevMain.attr({
+      stroke: "#FFFFFF", // Reset to original color
+      "stroke-width": prevMain.attr("data-original-width"), // Reset to original width
+    });
+  }
+
+  // Step 5: Select the new line
   selectedLine = lineGroup;
   const mainPath = selectedLine.findOne(".main-line");
-  mainPath.attr("data-original-width", mainPath.attr("stroke-width"));
-  mainPath.attr("stroke-width", 4); // Hiệu ứng phóng to
+  mainPath.attr({
+    stroke: "green", // Highlight with green
+    "stroke-width": 4, // Increase stroke width
+  });
 }
 
 // ============ Chức năng xóa toàn bộ line ============
