@@ -1,0 +1,154 @@
+body {
+  background-image: url("IndustrialIMG.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  margin: 0;
+}
+
+.dashboard-title {
+  color: #2c3e50;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.dashboard-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.card {
+  position: absolute;
+  background: linear-gradient(
+    145deg,
+    rgba(40, 40, 40, 0.5),
+    rgba(25, 25, 25, 0.3)
+  );
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(255, 255, 255, 0.5);
+  width: 300px;
+  height: 200px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* Card Title Styles */
+.card h3 {
+  font-size: 1.2rem;
+  margin: 0 0 15px 0;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Metric Group Styles */
+.metric-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 15px;
+}
+
+.metric-group > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.metric-group > div > div:first-child {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.metric-value {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* Add subtle hover effect */
+.card:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+
+#kunhua-card {
+  top: 20px;
+  left: 20px;
+}
+
+#workshop-card {
+  top: 20px;
+  right: 60px;
+}
+
+#office-card {
+  bottom: 20px;
+  left: 20px;
+}
+
+#methinks-card {
+  bottom: 20px;
+  right: 60px;
+}
+
+.lines-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.metric-group {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.metric-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2ecc71;
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #ffffff;
+}
+
+#draw-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 10px 20px;
+  background-color: rgba(30, 144, 255, 0.2);
+  color: #fff;
+  border: 2px solid #1e90ff;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 10;
+  font-family: "Arial", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(30, 144, 255, 0.3);
+}
+
+#draw-button:hover {
+  background-color: rgba(30, 144, 255, 0.4);
+  box-shadow: 0 0 15px rgba(30, 144, 255, 0.5), 0 0 30px rgba(30, 144, 255, 0.3);
+}
+/* 
+#drawing-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 1;
+  background-color: #0a0a1f;
+} */
