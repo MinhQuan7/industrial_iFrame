@@ -1,24 +1,19 @@
 let drawing = false;
 let drawInstance;
-let currentGlowPath; // Đường hào quang neon
-let currentMainPath; // Đường chính
+let currentGlowPath;
+let currentMainPath;
 let startPoint;
 let isCtrlPressed = false;
+let endCircle = null;
 
-// Theo dõi phím Ctrl
 document.addEventListener("keydown", (e) => {
-  if (e.ctrlKey) {
-    isCtrlPressed = true;
-  }
+  if (e.ctrlKey) isCtrlPressed = true;
 });
 
 document.addEventListener("keyup", (e) => {
-  if (!e.ctrlKey) {
-    isCtrlPressed = false;
-  }
+  if (!e.ctrlKey) isCtrlPressed = false;
 });
 
-// Nút bắt đầu/dừng vẽ
 document.getElementById("draw-button").addEventListener("click", () => {
   drawing = !drawing;
   if (drawing) {
@@ -30,6 +25,26 @@ document.getElementById("draw-button").addEventListener("click", () => {
   }
 });
 
+function createNeonEffect(path, color, width, blur) {
+  path.attr({
+    filter: drawInstance
+      .defs()
+      .element("filter")
+      .attr({
+        id: `glow-${Date.now()}`,
+        x: "-50%",
+        y: "-50%",
+        width: "200%",
+        height: "200%",
+      })
+      .element("feGaussianBlur")
+      .attr({
+        result: "blur",
+        stdDeviation: blur,
+      }),
+  });
+}
+
 function startDrawing() {
   drawInstance = SVG("#drawing-area").size("100%", "100%");
 
@@ -37,25 +52,49 @@ function startDrawing() {
     if (!drawing) return;
     startPoint = { x: e.offsetX, y: e.offsetY };
 
-    // Tạo đường hào quang neon
+    // Create outer glow
     currentGlowPath = drawInstance
       .path(`M${startPoint.x},${startPoint.y}`)
       .attr({
         fill: "none",
-        stroke: "#FFFFFF ", // Màu xanh neon
-        "stroke-width": 3, // Rộng để tạo hiệu ứng glow
-        opacity: 0.3, // Độ mờ cho hào quang
-        "stroke-linecap": "round", // Bo tròn đầu mút
+        stroke: "rgba(255, 255, 255, 0.4)",
+        "stroke-width": 8,
+        "stroke-linecap": "round",
+        filter: "url(#glow)",
       });
 
-    // Tạo đường chính
+    // Create middle layer
+    let middleGlow = drawInstance
+      .path(`M${startPoint.x},${startPoint.y}`)
+      .attr({
+        fill: "none",
+        stroke: "rgba(255, 255, 255, 0.6)",
+        "stroke-width": 4,
+        "stroke-linecap": "round",
+        filter: "url(#glow)",
+      });
+
+    // Create core line
     currentMainPath = drawInstance
       .path(`M${startPoint.x},${startPoint.y}`)
       .attr({
         fill: "none",
-        stroke: "#FFFFFF", // Màu xanh neon
-        "stroke-width": 3, // Mỏng hơn để làm lõi
-        "stroke-linecap": "round", // Bo tròn đầu mút
+        stroke: "#FFFFFF",
+        "stroke-width": 2,
+        "stroke-linecap": "round",
+      });
+
+    // Create filter for glow effect
+    let filter = drawInstance
+      .defs()
+      .element("filter")
+      .attr({
+        id: "glow",
+      })
+      .element("feGaussianBlur")
+      .attr({
+        stdDeviation: "3",
+        result: "coloredBlur",
       });
   });
 
@@ -71,17 +110,45 @@ function startDrawing() {
       endPoint = snapToAngle(startPoint, angle, length);
     }
 
-    // Cập nhật cả hai đường
-    currentGlowPath.plot(
-      `M${startPoint.x},${startPoint.y} L${endPoint.x},${endPoint.y}`
-    );
-    currentMainPath.plot(
-      `M${startPoint.x},${startPoint.y} L${endPoint.x},${endPoint.y}`
-    );
+    // Update all paths
+    const pathString = `M${startPoint.x},${startPoint.y} L${endPoint.x},${endPoint.y}`;
+    currentGlowPath.plot(pathString);
+    currentMainPath.plot(pathString);
+
+    // Remove previous end circle if it exists
+    if (endCircle) endCircle.remove();
+
+    // Create end circle with glow
+    endCircle = drawInstance.group();
+
+    // Outer glow circle
+    endCircle.circle(16).attr({
+      cx: endPoint.x,
+      cy: endPoint.y,
+      fill: "rgba(255, 255, 255, 0.2)",
+      filter: "url(#glow)",
+    });
+
+    // Middle glow circle
+    endCircle.circle(10).attr({
+      cx: endPoint.x,
+      cy: endPoint.y,
+      fill: "rgba(255, 255, 255, 0.4)",
+      filter: "url(#glow)",
+    });
+
+    // Core circle
+    endCircle.circle(6).attr({
+      cx: endPoint.x,
+      cy: endPoint.y,
+      fill: "#FFFFFF",
+    });
   });
 
   drawInstance.on("mouseup", () => {
     if (!drawing) return;
+    // Keep the end circle visible after mouseup
+    endCircle = null;
     currentGlowPath = null;
     currentMainPath = null;
   });
