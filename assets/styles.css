@@ -9,13 +9,134 @@ body {
 }
 
 .dashboard-title {
+  /* Positioning */
   position: absolute;
-  top: 10px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  color: #2c3e50;
-  margin: 0;
+
+  /* Text styling */
+  font-family: "Roboto", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
   text-align: center;
+  white-space: normal; /* Cho phép xuống dòng */
+
+  /* Box model */
+  width: fit-content;
+  margin: 0 auto;
+  padding: 15px 30px;
+
+  /* Display */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Gradient and effects */
+  color: transparent;
+  background: linear-gradient(
+    135deg,
+    #d5d5d5 0%,
+    #ffffff 25%,
+    #b4b4b4 50%,
+    #ffffff 75%,
+    #d5d5d5 100%
+  );
+  background-size: 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  /* Thêm hiệu ứng viền và bóng đổ để tăng độ tương phản */
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.7);
+  text-stroke: 1px rgba(0, 0, 0, 0.7);
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.7));
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  animation: gradientShift 8s ease infinite;
+}
+
+.dashboard-title::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: scanline 2s linear infinite;
+}
+
+.dashboard-title::after {
+  content: "MONITORING SYSTEM";
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  letter-spacing: 5px;
+  color: rgba(255, 255, 255, 0.5);
+  text-shadow: none;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes glitch {
+  0% {
+    transform: translateX(-50%) skew(0deg);
+  }
+  20% {
+    transform: translateX(-50%) skew(0deg);
+  }
+  21% {
+    transform: translateX(-50%) skew(-5deg);
+  }
+  23% {
+    transform: translateX(-50%) skew(5deg);
+  }
+  24% {
+    transform: translateX(-50%) skew(0deg);
+  }
+  100% {
+    transform: translateX(-50%) skew(0deg);
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Thêm media query cho responsive */
+@media screen and (max-width: 768px) {
+  .dashboard-title {
+    font-size: 1.8rem;
+    padding: 10px 20px;
+  }
+
+  .dashboard-title::after {
+    font-size: 0.6rem;
+    bottom: -15px;
+  }
 }
 
 .dashboard-container {
@@ -36,7 +157,7 @@ body {
   padding: 20px;
   box-shadow: 0 8px 30px rgba(255, 255, 255, 0.5);
   width: 300px;
-  height: 200px;
+  height: 120px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #ffffff;

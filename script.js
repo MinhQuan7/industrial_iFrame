@@ -70,7 +70,7 @@ function startDrawing() {
   if (!drawInstance) {
     drawInstance = SVG("#drawing-area").size("100%", "100%");
   }
-  let lineGroup;
+  // let lineGroup;
 
   drawInstance.on("mousedown", (e) => {
     if (!drawing) return;
@@ -278,7 +278,29 @@ document.getElementById("clear-all-button").addEventListener("click", () => {
   clearAllLinesFromStorage(); // Xóa tất cả khỏi LocalStorage
 });
 
+//Global variable cancel line
+let lineGroup = null;
+
 document.addEventListener("keydown", (e) => {
+  //cancel line
+  if (e.key === "Escape" && currentMainPath) {
+    // Xóa group chứa line đang vẽ
+    if (lineGroup) {
+      lineGroup.remove();
+      lineGroup = null;
+    }
+
+    // Xóa các biến liên quan
+    currentGlowPath = null;
+    currentMainPath = null;
+
+    // Xóa end circle nếu có
+    if (endCircle) {
+      endCircle.remove();
+      endCircle = null;
+    }
+  }
+
   if (e.key === "Delete" && selectedLine) {
     const index = lines.indexOf(selectedLine);
     if (index > -1) lines.splice(index, 1);
