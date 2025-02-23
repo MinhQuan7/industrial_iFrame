@@ -10,8 +10,8 @@ let isCapsLockOn = false; // Biến để theo dõi trạng thái Caps Lock
 
 // Khôi phục các đường line từ LocalStorage khi trang được tải
 window.addEventListener("load", () => {
-  const savedLines = JSON.parse(localStorage.getItem("lines")) || [];
   drawInstance = SVG("#drawing-area").size("100%", "100%");
+  const savedLines = JSON.parse(localStorage.getItem("lines")) || [];
   savedLines.forEach((lineData) => {
     const lineGroup = drawInstance.group().attr({ "data-line-group": true });
     const pathString = `M${lineData.start.x},${lineData.start.y} L${lineData.end.x},${lineData.end.y}`;
@@ -42,6 +42,28 @@ window.addEventListener("load", () => {
       "stroke-linecap": "round",
       "data-original-width": 2,
     });
+
+    // Vẽ lại chấm tròn ở đầu line nếu có
+    if (lineData.hasStartCircle) {
+      const startCircle = lineGroup.group();
+      startCircle.circle(16).attr({
+        cx: lineData.start.x,
+        cy: lineData.start.y,
+        fill: "rgba(255, 255, 255, 0.2)",
+        filter: "url(#glow)",
+      });
+      startCircle.circle(10).attr({
+        cx: lineData.start.x,
+        cy: lineData.start.y,
+        fill: "rgba(255, 255, 255, 0.4)",
+        filter: "url(#glow)",
+      });
+      startCircle.circle(6).attr({
+        cx: lineData.start.x,
+        cy: lineData.start.y,
+        fill: "#FFFFFF",
+      });
+    }
 
     lines.push(lineGroup);
     lineGroup.node.addEventListener("click", handleLineClick);
@@ -188,7 +210,7 @@ function startDrawing() {
         start: { x: start[0], y: start[1] },
         end: { x: end[0], y: end[1] },
       };
-      saveLineToStorage(lineData);
+      saveLineToStorage(lineData, isCapsLockOn); // Lưu trạng thái Caps Lock
     }
 
     if (endCircle) {
