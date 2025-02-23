@@ -8,9 +8,40 @@ let endCircle = null;
 let lines = []; // Mảng để lưu trữ tất cả các line đã vẽ
 let isCapsLockOn = false; // Biến để theo dõi trạng thái Caps Lock
 
-// Khôi phục các đường line từ LocalStorage khi trang được tải
 window.addEventListener("load", () => {
-  drawInstance = SVG("#drawing-area").size("100%", "100%");
+  lines = [];
+  drawing = false;
+  currentGlowPath = null;
+  currentMainPath = null;
+  const drawInstance = SVG("#drawing-area").size("100%", "100%");
+  const defs = drawInstance.defs();
+
+  // Kiểm tra và tạo filter glow nếu chưa tồn tại
+  let glowFilter = defs.findOne("#glow");
+  if (!glowFilter) {
+    glowFilter = defs.element("filter", {
+      id: "glow",
+      filterUnits: "objectBoundingBox",
+      x: "-25%",
+      y: "-25%",
+      width: "150%",
+      height: "150%",
+    });
+
+    // Thêm GaussianBlur
+    glowFilter.element("feGaussianBlur", {
+      stdDeviation: "3",
+      in: "SourceAlpha",
+      result: "blur",
+    });
+
+    // Thêm Merge Node
+    const merge = glowFilter.element("feMerge");
+    merge.element("feMergeNode", { in: "blur" });
+    merge.element("feMergeNode", { in: "SourceGraphic" });
+  }
+
+  // Khôi phục các đường line từ LocalStorage
   const savedLines = JSON.parse(localStorage.getItem("lines")) || [];
   savedLines.forEach((lineData) => {
     const lineGroup = drawInstance.group().attr({ "data-line-group": true });
@@ -98,11 +129,34 @@ document.getElementById("draw-button").addEventListener("click", () => {
 function startDrawing() {
   if (!drawInstance) {
     drawInstance = SVG("#drawing-area").size("100%", "100%");
+    if (!drawInstance.findOne("#glow")) {
+      const glowFilter = drawInstance.filter({
+        id: "glow",
+        width: "150%",
+        height: "150%",
+        x: "-25%",
+        y: "-25%",
+      });
+      glowFilter.feGaussianBlur({
+        in: "SourceAlpha",
+        stdDeviation: "3",
+        result: "blur",
+      });
+      const feMerge = glowFilter.feMerge();
+      feMerge.feMergeNode({ in: "blur" });
+      feMerge.feMergeNode({ in: "SourceGraphic" });
+    }
   }
 
   drawInstance.on("mousedown", (e) => {
     if (!drawing) return;
-    startPoint = { x: e.offsetX, y: e.offsetY };
+
+    // Tính toán tọa độ chính xác trong SVG
+    const svgRect = drawInstance.node.getBoundingClientRect();
+    startPoint = {
+      x: e.clientX - svgRect.left,
+      y: e.clientY - svgRect.top,
+    };
 
     lineGroup = drawInstance.group().attr({ "data-line-group": true });
 
@@ -157,8 +211,14 @@ function startDrawing() {
   });
 
   drawInstance.on("mousemove", (e) => {
-    if (!drawing || !currentMainPath) return;
-    let endPoint = { x: e.offsetX, y: e.offsetY };
+    if (!drawing || !currentMainPath || !startPoint) return; // Thêm !startPoint
+
+    // Tính toán endPoint tương tự như startPoint
+    const svgRect = drawInstance.node.getBoundingClientRect();
+    let endPoint = {
+      x: e.clientX - svgRect.left,
+      y: e.clientY - svgRect.top,
+    };
 
     if (isCtrlPressed) {
       const dx = endPoint.x - startPoint.x;
@@ -168,7 +228,9 @@ function startDrawing() {
       endPoint = snapToAngle(startPoint, angle, length);
     }
 
-    const pathString = `M${startPoint.x},${startPoint.y} L${endPoint.x},${endPoint.y}`;
+    const pathString = `M${startPoint?.x || 0},${startPoint?.y || 0} L${
+      endPoint?.x || 0
+    },${endPoint?.y || 0}`;
     currentGlowPath.plot(pathString);
     currentMainPath.plot(pathString);
 
@@ -195,23 +257,22 @@ function startDrawing() {
   });
 
   drawInstance.on("mouseup", () => {
-    if (!drawing) return;
+    if (!drawing || !lineGroup || !currentMainPath) return; // Thêm điều kiện
 
-    if (lineGroup) {
-      lines.push(lineGroup);
-      lineGroup.node.addEventListener("click", handleLineClick);
+    const pathData = currentMainPath.array();
+    if (pathData.length < 2) return; // Kiểm tra đường dẫn hợp lệ
 
-      // Lưu thông tin line vào LocalStorage
-      const mainPath = lineGroup.findOne(".main-line");
-      const pathData = mainPath.array();
-      const start = pathData[0][1];
-      const end = pathData[1][1];
-      const lineData = {
-        start: { x: start[0], y: start[1] },
-        end: { x: end[0], y: end[1] },
-      };
-      saveLineToStorage(lineData, isCapsLockOn); // Lưu trạng thái Caps Lock
-    }
+    const start = pathData[0][1];
+    const end = pathData[1][1];
+    const lineData = {
+      start: { x: start[0], y: start[1] },
+      end: { x: end[0], y: end[1] },
+      hasStartCircle: isCapsLockOn,
+    };
+
+    saveLineToStorage(lineData);
+    lines.push(lineGroup);
+    lineGroup.node.addEventListener("click", handleLineClick);
 
     if (endCircle) {
       endCircle.remove();
@@ -224,8 +285,9 @@ function startDrawing() {
   });
 }
 
-function saveLineToStorage(lineData) {
+function saveLineToStorage(lineData, hasStartCircle) {
   const savedLines = JSON.parse(localStorage.getItem("lines")) || [];
+  lineData.hasStartCircle = hasStartCircle; // Thêm trạng thái start circle
   savedLines.push(lineData);
   localStorage.setItem("lines", JSON.stringify(savedLines));
 }
