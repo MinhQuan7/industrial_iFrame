@@ -6,6 +6,7 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0; /* Xóa padding để tránh vượt quá viewport */
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .dashboard-title {
@@ -14,9 +15,7 @@ body {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-
-  /* Text styling */
-  font-family: "Roboto", sans-serif;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -73,7 +72,7 @@ body {
 }
 
 .dashboard-title::after {
-  content: "MONITORING SYSTEM";
+  content: "HOA KHANH TAY";
   position: absolute;
   bottom: -20px;
   left: 50%;
@@ -189,6 +188,7 @@ body {
   font-size: 1.4rem;
   font-weight: 500;
   color: #ffffff;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Add subtle hover effect */
