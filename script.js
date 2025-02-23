@@ -309,7 +309,7 @@ selectLineButton.addEventListener("click", () => {
   lines.forEach((line) => (line.node.style.cursor = cursorStyle));
 });
 
-// ============== Full Screen Feature ===============
+// ============== Full Screen Feature ================
 const fullscreenButton = document.getElementById("fullscreen-button");
 
 // Hàm toggle full screen
