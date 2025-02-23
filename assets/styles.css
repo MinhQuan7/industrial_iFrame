@@ -4,8 +4,8 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   font-family: Arial, sans-serif;
-  padding: 20px;
   margin: 0;
+  padding: 0; /* Xóa padding để tránh vượt quá viewport */
 }
 
 .dashboard-title {
@@ -82,6 +82,7 @@ body {
   letter-spacing: 5px;
   color: rgba(255, 255, 255, 0.5);
   text-shadow: none;
+  -webkit-text-stroke: 1px #ffffff;
 }
 
 @keyframes gradientShift {
@@ -250,7 +251,7 @@ body {
 .menu-container {
   position: fixed;
   top: 20px;
-  left: 20px;
+  right: 20px;
   z-index: 1000;
   padding: 8px;
   background: linear-gradient(
@@ -303,7 +304,7 @@ body {
 .dropdown-menu {
   position: fixed;
   top: 60px;
-  left: 20px;
+  right: 20px;
   background: linear-gradient(
     145deg,
     rgba(40, 40, 40, 0.4),
