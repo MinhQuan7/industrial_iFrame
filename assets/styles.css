@@ -4,20 +4,40 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   font-family: Arial, sans-serif;
-  padding: 20px;
-  margin: 0;
-}
-
-.dashboard-title {
-  color: #2c3e50;
-  margin-bottom: 30px;
-  text-align: center;
+  margin: 0; /* Loại bỏ padding để tận dụng toàn bộ không gian */
 }
 
 .dashboard-container {
   position: relative;
   width: 100vw;
   height: 100vh;
+  overflow: hidden; /* Ngăn chặn cuộn nếu nội dung vượt quá */
+}
+
+.dashboard-title {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #2c3e50;
+  margin: 0;
+  text-align: center;
+}
+
+#fullscreen-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #ffffff;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 50px;
+  left: 20px;
+  /* Giữ nguyên các kiểu dáng khác nếu có */
 }
 
 .card {
@@ -37,7 +57,6 @@ body {
   color: #ffffff;
 }
 
-/* Card Title Styles */
 .card h3 {
   font-size: 1.2rem;
   margin: 0 0 15px 0;
@@ -45,7 +64,6 @@ body {
   font-weight: 500;
 }
 
-/* Metric Group Styles */
 .metric-group {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -66,10 +84,9 @@ body {
 .metric-value {
   font-size: 1.4rem;
   font-weight: 500;
-  color: #ffffff;
+  color: #2ecc71;
 }
 
-/* Add subtle hover effect */
 .card:hover {
   transform: translateY(-2px);
   transition: transform 0.2s ease;
@@ -96,30 +113,22 @@ body {
   right: 60px;
 }
 
-.lines-svg {
+.lines-svg,
+#drawing-area {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
   z-index: -1;
 }
 
-.metric-group {
-  display: flex;
-  justify-content: space-between;
-  margin: 10px 0;
+/* Đảm bảo hamburger menu không gây tràn */
+.menu-container {
+  position: absolute;
+  top: 10px;
+  left: 20px;
 }
-
-.metric-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #2ecc71;
-}
-
-.card h3 {
-  margin-top: 0;
-  color: #ffffff;
-}
-
 /*=====Draw Button and Drop Down menu =========*/
 .menu-container {
   position: fixed;
