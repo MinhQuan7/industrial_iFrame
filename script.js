@@ -358,10 +358,8 @@ function exitFullscreen() {
 // Xử lý sự kiện thay đổi trạng thái full screen
 function handleFullscreenChange() {
   if (document.fullscreenElement) {
-    fullscreenButton.textContent = "Thoát toàn màn hình";
     document.body.classList.add("fullscreen-mode");
   } else {
-    fullscreenButton.textContent = "Toàn màn hình";
     document.body.classList.remove("fullscreen-mode");
   }
 }

@@ -235,11 +235,11 @@ body {
 [data-line-group]:hover .main-line {
   stroke: #00ff00 !important;
 }
-.fullscreen-mode {
-  overflow: hidden;
-}
-
-.fullscreen-mode .dashboard-container {
-  height: 100vh;
-  width: 100vw;
+#fullscreen-button {
+  position: fixed;
+  top: 10px; /* Khoảng cách từ mép trên */
+  right: 10px; /* Khoảng cách từ mép phải */
+  font-size: 24px; /* Kích thước icon */
+  cursor: pointer; /* Con trỏ đổi thành hình bàn tay khi hover */
+  z-index: 1000; /* Đảm bảo icon nằm trên các phần tử khác */
 }
