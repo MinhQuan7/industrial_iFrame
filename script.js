@@ -243,7 +243,7 @@ document.addEventListener("click", (e) => {
     dropdownMenu.classList.remove("active");
   }
 });
-
+//=============Delete Line==================
 function handleLineClick(e) {
   if (!isSelectMode) return;
 
@@ -308,3 +308,69 @@ selectLineButton.addEventListener("click", () => {
   const cursorStyle = isSelectMode ? "pointer" : "default";
   lines.forEach((line) => (line.node.style.cursor = cursorStyle));
 });
+
+// ============== Full Screen Feature ===============
+const fullscreenButton = document.getElementById("fullscreen-button");
+
+// Hàm toggle full screen
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    enterFullscreen();
+  } else {
+    exitFullscreen();
+  }
+}
+
+// Hàm vào full screen
+function enterFullscreen() {
+  const element = document.documentElement;
+
+  if (element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if (element.mozRequestFullScreen) {
+    /* Firefox */
+    element.mozRequestFullScreen();
+  } else if (element.webkitRequestFullscreen) {
+    /* Chrome, Safari & Opera */
+    element.webkitRequestFullscreen();
+  } else if (element.msRequestFullscreen) {
+    /* IE/Edge */
+    element.msRequestFullscreen();
+  }
+}
+
+// Hàm thoát full screen
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    /* Firefox */
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) {
+    /* Chrome, Safari & Opera */
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) {
+    /* IE/Edge */
+    document.msExitFullscreen();
+  }
+}
+
+// Xử lý sự kiện thay đổi trạng thái full screen
+function handleFullscreenChange() {
+  if (document.fullscreenElement) {
+    fullscreenButton.textContent = "Thoát toàn màn hình";
+    document.body.classList.add("fullscreen-mode");
+  } else {
+    fullscreenButton.textContent = "Toàn màn hình";
+    document.body.classList.remove("fullscreen-mode");
+  }
+}
+
+// Thêm event listeners
+fullscreenButton.addEventListener("click", toggleFullscreen);
+
+// Theo dõi sự kiện full screen change cho các trình duyệt khác nhau
+document.addEventListener("fullscreenchange", handleFullscreenChange);
+document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+document.addEventListener("MSFullscreenChange", handleFullscreenChange);
