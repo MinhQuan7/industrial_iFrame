@@ -174,12 +174,6 @@ body {
 }
 
 /* Metric Group Styles */
-.metric-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 15px;
-}
-
 .metric-group > div {
   display: flex;
   flex-direction: column;
@@ -187,7 +181,7 @@ body {
 }
 
 .metric-group > div > div:first-child {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.7);
 }
 
@@ -204,12 +198,12 @@ body {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
 }
 
-#kunhua-card {
+#lake-card {
   top: 20px;
   left: 20px;
 }
 
-#workshop-card {
+#waterFilter-card {
   top: 20px;
   right: 60px;
 }
@@ -219,7 +213,7 @@ body {
   left: 20px;
 }
 
-#methinks-card {
+#factory-card {
   bottom: 20px;
   right: 60px;
 }

@@ -1,0 +1,182 @@
+/*************************************************************
+  Download latest ERa library here:
+    https://github.com/eoh-jsc/era-lib/releases/latest
+    https://www.arduino.cc/reference/en/libraries/era
+    https://registry.platformio.org/libraries/eoh-ltd/ERa/installation
+
+    ERa website:                https://e-ra.io
+    ERa blog:                   https://iotasia.org
+    ERa forum:                  https://forum.eoh.io
+    Follow us:                  https://www.fb.com/EoHPlatform
+ *************************************************************/
+
+// Enable debug console
+// Set CORE_DEBUG_LEVEL = 3 first
+#define ERA_DEBUG
+#define ERA_SERIAL Serial
+
+/* Select ERa host location (VN: Viet Nam, SG: Singapore) */
+#define ERA_LOCATION_VN
+// #define ERA_LOCATION_SG
+
+// You should get Auth Token in the ERa App or ERa Dashboard
+#define ERA_AUTH_TOKEN "628bac42-108c-4e68-b44f-3809653da1d0"
+
+/* Define setting button */
+// #define BUTTON_PIN              0
+
+#if defined(BUTTON_PIN)
+    // Active low (false), Active high (true)
+    #define BUTTON_INVERT       false
+    #define BUTTON_HOLD_TIMEOUT 5000UL
+
+    // This directive is used to specify whether the configuration should be erased.
+    // If it's set to true, the configuration will be erased.
+    #define ERA_ERASE_CONFIG    false
+#endif
+
+#include <Arduino.h>
+#include <ERa.hpp>
+#include <Automation/ERaSmart.hpp>
+#include <Time/ERaEspTime.hpp>
+#if defined(BUTTON_PIN)
+    #include <pthread.h>
+    #include <ERa/ERaButton.hpp>
+#endif
+
+const char ssid[] = "eoh.io";
+const char pass[] = "Eoh@2020";
+
+WiFiClient mbTcpClient;
+
+ERaEspTime syncTime;
+ERaSmart smart(ERa, syncTime);
+
+#if defined(BUTTON_PIN)
+    ERaButton button;
+    pthread_t pthreadButton;
+
+    static void* handlerButton(void* args) {
+        for (;;) {
+            button.run();
+            ERaDelay(10);
+        }
+        pthread_exit(NULL);
+    }
+
+#if ERA_VERSION_NUMBER >= ERA_VERSION_VAL(1, 2, 0)
+    static void eventButton(uint8_t pin, ButtonEventT event) {
+        if (event != ButtonEventT::BUTTON_ON_HOLD) {
+            return;
+        }
+        ERa.switchToConfig(ERA_ERASE_CONFIG);
+        (void)pin;
+    }
+#else
+    static void eventButton(ButtonEventT event) {
+        if (event != ButtonEventT::BUTTON_ON_HOLD) {
+            return;
+        }
+        ERa.switchToConfig(ERA_ERASE_CONFIG);
+    }
+#endif
+
+    void initButton() {
+        pinMode(BUTTON_PIN, INPUT);
+        button.setButton(BUTTON_PIN, digitalRead, eventButton,
+                        BUTTON_INVERT).onHold(BUTTON_HOLD_TIMEOUT);
+        pthread_create(&pthreadButton, NULL, handlerButton, NULL);
+    }
+#endif
+
+/* This function will run every time ERa is connected */
+ERA_CONNECTED() {
+    ERA_LOG("ERa", "ERa connected!");
+}
+
+/* This function will run every time ERa is disconnected */
+ERA_DISCONNECTED() {
+    ERA_LOG("ERa", "ERa disconnected!");
+}
+
+/* This function print uptime every second */
+void timerEvent() {
+    ERA_LOG("Timer", "Uptime: %d", ERaMillis() / 2000L);
+
+    // Clo của hồ (ppm)
+  float chlorine = random(5, 50) / 10.0; // 0.5 đến 5.0 ppm
+  ERa.virtualWrite(V0, chlorine);
+
+  // Độ pH của nước
+  float pH = random(65, 85) / 10.0; // 6.5 đến 8.5
+  ERa.virtualWrite(V1, pH);
+
+  // Độ đục của hồ (NTU)
+  float turbidity = random(1, 50) / 10.0; // 0.1 đến 5.0 NTU
+  ERa.virtualWrite(V2, turbidity);
+
+  // Độ clo dư của hồ (ppm)
+  float residualChlorine = random(5, 50) / 10.0; // 0.5 đến 5.0 ppm
+  ERa.virtualWrite(V3, residualChlorine);
+
+  // Năng lượng tiêu thụ của office (kWh)
+  float energyConsumption = random(50, 1500) / 10.0; // 5.0 đến 150.0 kWh
+  ERa.virtualWrite(V4, energyConsumption);
+
+  // Nhiệt độ (°C)
+  float temperature = random(150, 350) / 10.0; // 15.0 đến 35.0 °C
+  ERa.virtualWrite(V5, temperature);
+
+  // Độ ẩm (%)
+  int humidity = random(20, 80); // 20% đến 80%
+  ERa.virtualWrite(V6, humidity);
+
+  // In ra các giá trị
+  Serial.println("=== Thông số mới ===");
+  Serial.println("Clo của hồ: " + String(chlorine) + " ppm");
+  Serial.println("Độ pH của nước: " + String(pH));
+  Serial.println("Độ đục của hồ: " + String(turbidity) + " NTU");
+  Serial.println("Độ clo dư của hồ: " + String(residualChlorine) + " ppm");
+  Serial.println("Năng lượng tiêu thụ: " + String(energyConsumption) + " kWh");
+  Serial.println("Nhiệt độ: " + String(temperature) + " °C");
+  Serial.println("Độ ẩm: " + String(humidity) + " %");
+}
+
+void setup() {
+    /* Setup debug console */
+#if defined(ERA_DEBUG)
+    Serial.begin(115200);
+#endif
+
+#if defined(BUTTON_PIN)
+    /* Initializing button. */
+    initButton();
+    /* Enable read/write WiFi credentials */
+    ERa.setPersistent(true);
+#endif
+
+    /* Set board id */
+    // ERa.setBoardID("Board_1");
+
+    /* Setup Client for Modbus TCP/IP */
+    ERa.setModbusClient(mbTcpClient);
+
+    /* Set API task size. If this function is enabled,
+       the core API will run on a separate task after disconnecting from the server
+       (suitable for edge automation).*/
+    ERa.setTaskSize(ERA_API_TASK_SIZE, true);
+
+    /* Set scan WiFi. If activated, the board will scan
+       and connect to the best quality WiFi. */
+    ERa.setScanWiFi(true);
+
+    /* Initializing the ERa library. */
+    ERa.begin(ssid, pass);
+
+    /* Setup timer called function every second */
+    ERa.addInterval(1000L, timerEvent);
+}
+
+void loop() {
+    ERa.run();
+}

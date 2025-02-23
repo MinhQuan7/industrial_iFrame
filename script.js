@@ -6,6 +6,7 @@ let startPoint;
 let isCtrlPressed = false;
 let endCircle = null;
 let lines = []; // Mảng để lưu trữ tất cả các line đã vẽ
+let isCapsLockOn = false; // Biến để theo dõi trạng thái Caps Lock
 
 // Khôi phục các đường line từ LocalStorage khi trang được tải
 window.addEventListener("load", () => {
@@ -49,10 +50,16 @@ window.addEventListener("load", () => {
 
 document.addEventListener("keydown", (e) => {
   if (e.ctrlKey) isCtrlPressed = true;
+  if (e.getModifierState("CapsLock")) {
+    isCapsLockOn = true;
+  }
 });
 
 document.addEventListener("keyup", (e) => {
   if (!e.ctrlKey) isCtrlPressed = false;
+  if (e.key === "CapsLock") {
+    isCapsLockOn = e.getModifierState("CapsLock");
+  }
 });
 
 document.getElementById("draw-button").addEventListener("click", () => {
@@ -70,13 +77,34 @@ function startDrawing() {
   if (!drawInstance) {
     drawInstance = SVG("#drawing-area").size("100%", "100%");
   }
-  // let lineGroup;
 
   drawInstance.on("mousedown", (e) => {
     if (!drawing) return;
     startPoint = { x: e.offsetX, y: e.offsetY };
 
     lineGroup = drawInstance.group().attr({ "data-line-group": true });
+
+    // Vẽ chấm tròn ở đầu line nếu Caps Lock được bật
+    if (isCapsLockOn) {
+      const startCircle = lineGroup.group();
+      startCircle.circle(16).attr({
+        cx: startPoint.x,
+        cy: startPoint.y,
+        fill: "rgba(255, 255, 255, 0.2)",
+        filter: "url(#glow)",
+      });
+      startCircle.circle(10).attr({
+        cx: startPoint.x,
+        cy: startPoint.y,
+        fill: "rgba(255, 255, 255, 0.4)",
+        filter: "url(#glow)",
+      });
+      startCircle.circle(6).attr({
+        cx: startPoint.x,
+        cy: startPoint.y,
+        fill: "#FFFFFF",
+      });
+    }
 
     currentGlowPath = lineGroup.path(`M${startPoint.x},${startPoint.y}`).attr({
       fill: "none",
@@ -226,7 +254,7 @@ function stopDrawing() {
   }
 }
 
-//============Menu Drop Down Feature==============
+// Các phần còn lại như Menu Drop Down, Delete Line, Full Screen Feature giữ nguyên
 let isSelectMode = false;
 let selectedLine = null;
 
@@ -243,7 +271,7 @@ document.addEventListener("click", (e) => {
     dropdownMenu.classList.remove("active");
   }
 });
-//=============Delete Line==================
+
 function handleLineClick(e) {
   if (!isSelectMode) return;
 
@@ -275,26 +303,17 @@ document.getElementById("clear-all-button").addEventListener("click", () => {
   lines.forEach((line) => line.remove());
   lines = [];
   selectedLine = null;
-  clearAllLinesFromStorage(); // Xóa tất cả khỏi LocalStorage
+  clearAllLinesFromStorage();
 });
 
-//Global variable cancel line
-let lineGroup = null;
-
 document.addEventListener("keydown", (e) => {
-  //cancel line
   if (e.key === "Escape" && currentMainPath) {
-    // Xóa group chứa line đang vẽ
     if (lineGroup) {
       lineGroup.remove();
       lineGroup = null;
     }
-
-    // Xóa các biến liên quan
     currentGlowPath = null;
     currentMainPath = null;
-
-    // Xóa end circle nếu có
     if (endCircle) {
       endCircle.remove();
       endCircle = null;
@@ -331,10 +350,8 @@ selectLineButton.addEventListener("click", () => {
   lines.forEach((line) => (line.node.style.cursor = cursorStyle));
 });
 
-// ============== Full Screen Feature ================
 const fullscreenButton = document.getElementById("fullscreen-button");
 
-// Hàm toggle full screen
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
     enterFullscreen();
@@ -343,41 +360,31 @@ function toggleFullscreen() {
   }
 }
 
-// Hàm vào full screen
 function enterFullscreen() {
   const element = document.documentElement;
-
   if (element.requestFullscreen) {
     element.requestFullscreen();
   } else if (element.mozRequestFullScreen) {
-    /* Firefox */
     element.mozRequestFullScreen();
   } else if (element.webkitRequestFullscreen) {
-    /* Chrome, Safari & Opera */
     element.webkitRequestFullscreen();
   } else if (element.msRequestFullscreen) {
-    /* IE/Edge */
     element.msRequestFullscreen();
   }
 }
 
-// Hàm thoát full screen
 function exitFullscreen() {
   if (document.exitFullscreen) {
     document.exitFullscreen();
   } else if (document.mozCancelFullScreen) {
-    /* Firefox */
     document.mozCancelFullScreen();
   } else if (document.webkitExitFullscreen) {
-    /* Chrome, Safari & Opera */
     document.webkitExitFullscreen();
   } else if (document.msExitFullscreen) {
-    /* IE/Edge */
     document.msExitFullscreen();
   }
 }
 
-// Xử lý sự kiện thay đổi trạng thái full screen
 function handleFullscreenChange() {
   if (document.fullscreenElement) {
     document.body.classList.add("fullscreen-mode");
@@ -386,11 +393,83 @@ function handleFullscreenChange() {
   }
 }
 
-// Thêm event listeners
 fullscreenButton.addEventListener("click", toggleFullscreen);
-
-// Theo dõi sự kiện full screen change cho các trình duyệt khác nhau
 document.addEventListener("fullscreenchange", handleFullscreenChange);
 document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
 document.addEventListener("mozfullscreenchange", handleFullscreenChange);
 document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+//=============E-Ra Service================
+const eraWidget = new EraWidget();
+const lake = document.querySelector(".lakeClo-value");
+const waterFilterPH = document.querySelector(".waterFilter-pH");
+const waterFilterDoDuc = document.querySelector(".waterFilter-doDuc");
+const waterFilterCloDu = document.querySelector(".waterFilter-cloDu");
+const officePower = document.querySelector(".office-powerConsump");
+const factoryTemp = document.querySelector(".factory-temperature");
+const factoryHumid = document.querySelector(".factory-humidity");
+
+let configLake = null,
+  configwaterFilterPH = null,
+  configwaterFilterDoDuc = null,
+  configwaterFilterCloDu = null,
+  configofficePower = null,
+  configfactoryTemp = null,
+  configfactoryHumid = null;
+eraWidget.init({
+  onConfiguration: (configuration) => {
+    configLake = configuration.realtime_configs[0];
+    configwaterFilterPH = configuration.realtime_configs[1];
+    configwaterFilterDoDuc = configuration.realtime_configs[2];
+    configwaterFilterCloDu = configuration.realtime_configs[3];
+    configofficePower = configuration.realtime_configs[4];
+    configfactoryTemp = configuration.realtime_configs[5];
+    configfactoryHumid = configuration.realtime_configs[6];
+
+    console.log("Configuration:", {
+      configLake,
+      configwaterFilterPH,
+      configwaterFilterDoDuc,
+      configwaterFilterCloDu,
+      configofficePower,
+      configfactoryTemp,
+      configfactoryHumid,
+    });
+  },
+  onValues: (values) => {
+    if (configLake && values[configLake.id]) {
+      const lakeValue = values[configLake.id].value;
+      if (lake) lake.textContent = lakeValue;
+    }
+
+    if (configwaterFilterPH && values[configwaterFilterPH.id]) {
+      const pHValue = values[configwaterFilterPH.id].value;
+      if (waterFilterPH) waterFilterPH.textContent = pHValue;
+    }
+
+    if (configwaterFilterDoDuc && values[configwaterFilterDoDuc.id]) {
+      const doducValue = values[configwaterFilterDoDuc.id].value;
+      if (waterFilterDoDuc) waterFilterDoDuc.textContent = doducValue;
+    }
+
+    if (configwaterFilterCloDu && values[configwaterFilterCloDu.id]) {
+      const cloValue = values[configwaterFilterCloDu.id].value;
+      if (waterFilterCloDu) waterFilterCloDu.textContent = cloValue;
+    }
+
+    if (configofficePower && values[configofficePower.id]) {
+      const powerValue = values[configofficePower.id].value;
+      if (officePower) officePower.textContent = powerValue + " kWh";
+    }
+
+    if (configfactoryTemp && values[configfactoryTemp.id]) {
+      const tempValue = values[configfactoryTemp.id].value;
+      if (factoryTemp) factoryTemp.textContent = tempValue + "℃";
+    }
+
+    if (configfactoryHumid && values[configfactoryHumid.id]) {
+      const humidValue = values[configfactoryHumid.id].value;
+      if (factoryHumid) factoryHumid.textContent = humidValue + "%";
+    }
+  },
+});

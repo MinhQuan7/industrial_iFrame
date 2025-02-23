@@ -2,6 +2,7 @@
 <html lang="vi">
   <head>
     <link rel="stylesheet" href="assets/styles.css" />
+    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -41,40 +42,32 @@
       <svg id="drawing-area" width="100%" height="100%"></svg>
       <svg class="lines-svg" width="100%" height="100%"></svg>
 
-      <!-- Kunhua Workshop Card -->
-      <div class="card" id="kunhua-card">
+      <!-- Lake Card -->
+      <div class="card" id="lake-card">
         <h3>Hồ nước</h3>
         <div class="metric-group">
           <div>
-            <div>Voltage (V)</div>
-            <div class="metric-value">399</div>
-          </div>
-          <div>
-            <div>Power (kW)</div>
-            <div class="metric-value">168</div>
-          </div>
-          <div>
-            <div>Demand (kW)</div>
-            <div class="metric-value">218</div>
+            <div>Clo(ppm)</div>
+            <div class="metric-value lakeClo-value">399</div>
           </div>
         </div>
       </div>
 
-      <!-- Workshop Card -->
-      <div class="card" id="workshop-card">
+      <!-- Water Filter Card -->
+      <div class="card" id="waterFilter-card">
         <h3>Khu lọc nước</h3>
         <div class="metric-group">
           <div>
-            <div>Voltage (V)</div>
-            <div class="metric-value">388</div>
+            <div>PH</div>
+            <div class="metric-value waterFilter-pH">388</div>
           </div>
           <div>
-            <div>Power (kW)</div>
-            <div class="metric-value">176</div>
+            <div>Độ đục(NTU)</div>
+            <div class="metric-value waterFilter-doDuc">176</div>
           </div>
           <div>
-            <div>Demand (kW)</div>
-            <div class="metric-value">154</div>
+            <div>Clo dư(ppm)</div>
+            <div class="metric-value waterFilter-cloDu">154</div>
           </div>
         </div>
       </div>
@@ -84,29 +77,24 @@
         <h3>Khu R&D</h3>
         <div class="metric-group">
           <div>
-            <div>Howrate (L/Mr)</div>
-            <div class="metric-value">1364</div>
+            <div>Điện năng tiêu thụ(kWh)</div>
+            <div class="metric-value office-powerConsump">1364</div>
           </div>
         </div>
       </div>
 
-      <!-- Methinks Card -->
-      <div class="card" id="methinks-card">
+      <!-- Factory Card -->
+      <div class="card" id="factory-card">
         <h3>Xưởng sản xuất</h3>
         <div class="metric-group">
           <div>
-            <div>Voltage (V)</div>
-            <div class="metric-value">387</div>
+            <div>Nhiệt độ (℃)</div>
+            <div class="metric-value factory-temperature">387</div>
           </div>
           <div>
-            <div>Total (m3)</div>
-            <div class="metric-value">3991</div>
+            <div>Đô ẩm(%)</div>
+            <div class="metric-value factory-humidity">387</div>
           </div>
-          <div>
-            <div>Today Usage (m3)</div>
-            <div class="metric-value">3</div>
-          </div>
-        </div>
       </div>
     </div>
     <script src="script.js"></script>
