@@ -7,7 +7,7 @@ let isCtrlPressed = false;
 let endCircle = null;
 let lines = []; // Mảng để lưu trữ tất cả các line đã vẽ
 let isCapsLockOn = false; // Biến để theo dõi trạng thái Caps Lock
-
+let currentMiddlePath;
 // Khôi phục các đường line từ LocalStorage khi trang được tải
 window.addEventListener("load", () => {
   drawInstance = SVG("#drawing-area").size("100%", "100%");
@@ -136,13 +136,15 @@ function startDrawing() {
       filter: "url(#glow)",
     });
 
-    lineGroup.path(`M${startPoint.x},${startPoint.y}`).attr({
-      fill: "none",
-      stroke: "rgba(255, 255, 255, 0.6)",
-      "stroke-width": 4,
-      "stroke-linecap": "round",
-      filter: "url(#glow)",
-    });
+    currentMiddlePath = lineGroup
+      .path(`M${startPoint.x},${startPoint.y}`)
+      .attr({
+        fill: "none",
+        stroke: "rgba(255, 255, 255, 0.6)",
+        "stroke-width": 4,
+        "stroke-linecap": "round",
+        filter: "url(#glow)",
+      });
 
     currentMainPath = lineGroup
       .path(`M${startPoint.x},${startPoint.y}`)
@@ -170,6 +172,7 @@ function startDrawing() {
 
     const pathString = `M${startPoint.x},${startPoint.y} L${endPoint.x},${endPoint.y}`;
     currentGlowPath.plot(pathString);
+    currentMiddlePath.plot(pathString);
     currentMainPath.plot(pathString);
 
     if (endCircle) endCircle.remove();
@@ -227,8 +230,8 @@ function startDrawing() {
       endCircle.remove();
       endCircle = null;
     }
-
     currentGlowPath = null;
+    currentMiddlePath = null;
     currentMainPath = null;
     lineGroup = null;
   });
