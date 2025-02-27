@@ -481,12 +481,10 @@ eraWidget.init({
       const pHValue = values[configwaterFilterPH.id].value;
       if (waterFilterPH) waterFilterPH.textContent = pHValue;
     }
-
     if (configwaterFilterDoDuc && values[configwaterFilterDoDuc.id]) {
       const doducValue = values[configwaterFilterDoDuc.id].value;
       if (waterFilterDoDuc) waterFilterDoDuc.textContent = doducValue;
     }
-
     if (configwaterFilterCloDu && values[configwaterFilterCloDu.id]) {
       const cloValue = values[configwaterFilterCloDu.id].value;
       if (waterFilterCloDu) waterFilterCloDu.textContent = cloValue;
